@@ -4,32 +4,55 @@ const User = require("../models/User");
 // Register User
 exports.register = async (req, res) => {
   try {
+
+    const exists = await User.findOne({
+      mobile: req.body.mobile,
+    });
+
+    if (exists) {
+      return res.status(400).json({
+        success: false,
+        message: "Mobile already exists",
+      });
+    }
+
     const user = await User.create(req.body);
+
+    const userData = user.toObject();
+    delete userData.password;
 
     res.status(201).json({
       success: true,
       message: "User Created",
-      data: user,
+      data: userData,
     });
+
   } catch (err) {
+
     res.status(500).json({
       success: false,
       message: err.message,
     });
+
   }
 };
 
 // Login
 exports.login = async (req, res) => {
+
   try {
+
     const { mobile, password } = req.body;
 
-    const user = await User.findOne({ mobile });
+    const user = await User.findOne({
+      mobile,
+      isActive: true,
+    });
 
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "User Not Found",
+        message: "User Not Found or Inactive",
       });
     }
 
@@ -42,6 +65,10 @@ exports.login = async (req, res) => {
       });
     }
 
+    // Update last login
+    user.lastLogin = new Date();
+    await user.save();
+
     const token = jwt.sign(
       {
         id: user._id,
@@ -53,15 +80,22 @@ exports.login = async (req, res) => {
       }
     );
 
+    const userData = user.toObject();
+    delete userData.password;
+
     res.json({
       success: true,
       token,
-      user,
+      user: userData,
     });
+
   } catch (err) {
+
     res.status(500).json({
       success: false,
       message: err.message,
     });
+
   }
+
 };

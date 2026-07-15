@@ -9,7 +9,7 @@ const authRoutes = require("./routes/authRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const tourRoutes = require("./routes/tourRoutes");
-
+const userRoutes= require("./routes/userRoutes")
 
 
 dotenv.config();
@@ -30,6 +30,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/tour", tourRoutes);
+app.use("/api/user",userRoutes);
 app.get("/", (req, res) => {
   res.json({
     success: true,

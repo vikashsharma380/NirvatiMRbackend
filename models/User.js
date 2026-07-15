@@ -24,12 +24,25 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+photo: {
+  type: String,
+  default: "",
+},
+deviceToken: {
+  type: String,
+  default: "",
+},
 
+deviceType: {
+  type: String,
+  enum: ["android", "ios"],
+  default: "android",
+},
     password: {
       type: String,
       required: true,
     },
-
+lastLogin: Date,
     role: {
       type: String,
       enum: ["admin", "manager", "mr"],
