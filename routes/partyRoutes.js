@@ -14,7 +14,7 @@ router.post("/", createParty);
 
 router.get("/:type", getParties);
 
-router.get("/single/:id", getParty);
+router.get("/details/:id", getParty);
 
 router.put("/:id", updateParty);
 
