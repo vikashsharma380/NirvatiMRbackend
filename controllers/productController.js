@@ -1,186 +1,195 @@
-const Product=require("../models/Product");
+const Product = require("../models/Product");
 
-// Create
-exports.createProduct=async(req,res)=>{
+// ============================
+// CREATE PRODUCT
+// ============================
 
-try{
+exports.createProduct = async (req, res) => {
+  try {
+    const exists = await Product.findOne({
+      productCode: req.body.productCode,
+    });
 
-const product=await Product.create(req.body);
+    if (exists) {
+      return res.status(400).json({
+        success: false,
+        message: "Product Code already exists",
+      });
+    }
 
-res.status(201).json({
+    const product = await Product.create(req.body);
 
-success:true,
+    res.status(201).json({
+      success: true,
+      message: "Product Added Successfully",
+      data: product,
+    });
 
-message:"Product Added Successfully",
-
-data:product
-
-});
-
-}catch(err){
-
-res.status(500).json({
-
-success:false,
-
-message:err.message
-
-});
-
-}
-
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
 };
 
-// Get All
+// ============================
+// GET PRODUCTS
+// ============================
 
-exports.getProducts=async(req,res)=>{
+exports.getProducts = async (req, res) => {
+  try {
 
-try{
+    const search = req.query.search || "";
 
-const products=await Product.find({
+    const products = await Product.find({
+      name: {
+        $regex: search,
+        $options: "i",
+      },
+    }).sort({ name: 1 });
 
-status:true
+    res.json({
+      success: true,
+      count: products.length,
+      data: products,
+    });
 
-}).sort({
-
-name:1
-
-});
-
-res.json({
-
-success:true,
-
-count:products.length,
-
-data:products
-
-});
-
-}catch(err){
-
-res.status(500).json({
-
-success:false,
-
-message:err.message
-
-});
-
-}
-
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
 };
 
-// Get One
+// ============================
+// GET SINGLE PRODUCT
+// ============================
 
-exports.getProduct=async(req,res)=>{
+exports.getProduct = async (req, res) => {
+  try {
 
-try{
+    const product = await Product.findById(req.params.id);
 
-const product=await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product Not Found",
+      });
+    }
 
-res.json({
+    res.json({
+      success: true,
+      data: product,
+    });
 
-success:true,
-
-data:product
-
-});
-
-}catch(err){
-
-res.status(500).json({
-
-success:false,
-
-message:err.message
-
-});
-
-}
-
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
 };
 
-// Update
+// ============================
+// UPDATE PRODUCT
+// ============================
 
-exports.updateProduct=async(req,res)=>{
+exports.updateProduct = async (req, res) => {
+  try {
 
-try{
+    const duplicate = await Product.findOne({
+      _id: { $ne: req.params.id },
+      productCode: req.body.productCode,
+    });
 
-const product=await Product.findByIdAndUpdate(
+    if (duplicate) {
+      return res.status(400).json({
+        success: false,
+        message: "Product Code already exists",
+      });
+    }
 
-req.params.id,
+    const product = await Product.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
 
-req.body,
+    res.json({
+      success: true,
+      message: "Product Updated Successfully",
+      data: product,
+    });
 
-{
-
-new:true
-
-}
-
-);
-
-res.json({
-
-success:true,
-
-message:"Updated",
-
-data:product
-
-});
-
-}catch(err){
-
-res.status(500).json({
-
-success:false,
-
-message:err.message
-
-});
-
-}
-
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
 };
 
-// Delete
+// ============================
+// ACTIVATE / DEACTIVATE
+// ============================
 
-exports.deleteProduct=async(req,res)=>{
+exports.toggleProduct = async (req, res) => {
+  try {
 
-try{
+    const product = await Product.findById(req.params.id);
 
-await Product.findByIdAndUpdate(
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product Not Found",
+      });
+    }
 
-req.params.id,
+    product.status = !product.status;
 
-{
+    await product.save();
 
-status:false
+    res.json({
+      success: true,
+      message: product.status
+        ? "Product Activated"
+        : "Product Deactivated",
+      data: product,
+    });
 
-}
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
 
-);
+// ============================
+// DELETE PRODUCT
+// ============================
 
-res.json({
+exports.deleteProduct = async (req, res) => {
+  try {
 
-success:true,
+    await Product.findByIdAndUpdate(
+      req.params.id,
+      {
+        status: false,
+      }
+    );
 
-message:"Deleted"
+    res.json({
+      success: true,
+      message: "Product Deleted Successfully",
+    });
 
-});
-
-}catch(err){
-
-res.status(500).json({
-
-success:false,
-
-message:err.message
-
-});
-
-}
-
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
 };

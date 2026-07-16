@@ -13,7 +13,8 @@ getProduct,
 
 updateProduct,
 
-deleteProduct
+deleteProduct,
+toggleProduct,
 
 }=require("../controllers/productController");
 
@@ -26,5 +27,7 @@ router.get("/:id",getProduct);
 router.put("/:id",updateProduct);
 
 router.delete("/:id",deleteProduct);
+
+router.patch("/:id/status",toggleProduct);
 
 module.exports=router;
