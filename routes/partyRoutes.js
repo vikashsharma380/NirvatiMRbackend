@@ -8,15 +8,17 @@ const {
   getParty,
   updateParty,
   deleteParty,
+  togglePartyStatus,
 } = require("../controllers/partyController");
-
 router.post("/", createParty);
 
-router.get("/:type", getParties);
+router.get("/", getParties);
 
-router.get("/details/:id", getParty);
+router.get("/:id", getParty);
 
 router.put("/:id", updateParty);
+
+router.patch("/:id/status", togglePartyStatus);
 
 router.delete("/:id", deleteParty);
 

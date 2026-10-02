@@ -48,7 +48,18 @@ lastLogin: Date,
       enum: ["admin", "manager", "mr"],
       default: "mr",
     },
-
+resetOtpHash: {
+  type: String,
+  default: "",
+},
+resetOtpExpires: {
+  type: Date,
+  default: null,
+},
+resetOtpVerifiedUntil: {
+  type: Date,
+  default: null,
+},
     headquarters: {
       type: String,
       default: "",

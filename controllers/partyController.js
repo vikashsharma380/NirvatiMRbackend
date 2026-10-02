@@ -5,15 +5,10 @@ const Party = require("../models/Party");
 // =========================
 exports.createParty = async (req, res) => {
   try {
-
-    const {
-      name,
-      mobile,
-      type,
-    } = req.body;
+    const { name, type } = req.body;
 
     const already = await Party.findOne({
-      name,
+      name: name.trim(),
       type,
       status: true,
     });
@@ -32,14 +27,11 @@ exports.createParty = async (req, res) => {
       message: "Party Added Successfully",
       data: party,
     });
-
   } catch (err) {
-
     res.status(500).json({
       success: false,
       message: err.message,
     });
-
   }
 };
 
@@ -48,14 +40,13 @@ exports.createParty = async (req, res) => {
 // =========================
 exports.getParties = async (req, res) => {
   try {
+    const { type, search } = req.query;
 
-    const { type } = req.params;
-    const { search } = req.query;
+    let filter = {};
 
-    let filter = {
-      type,
-      status: true,
-    };
+    if (type) {
+      filter.type = type;
+    }
 
     if (search) {
       filter.name = {
@@ -64,22 +55,20 @@ exports.getParties = async (req, res) => {
       };
     }
 
-    const parties = await Party.find(filter)
-      .sort({ name: 1 });
+    const parties = await Party.find(filter).sort({
+      name: 1,
+    });
 
     res.json({
       success: true,
       count: parties.length,
       data: parties,
     });
-
   } catch (err) {
-
     res.status(500).json({
       success: false,
       message: err.message,
     });
-
   }
 };
 
@@ -88,7 +77,6 @@ exports.getParties = async (req, res) => {
 // =========================
 exports.getParty = async (req, res) => {
   try {
-
     const party = await Party.findById(req.params.id);
 
     if (!party) {
@@ -102,14 +90,11 @@ exports.getParty = async (req, res) => {
       success: true,
       data: party,
     });
-
   } catch (err) {
-
     res.status(500).json({
       success: false,
       message: err.message,
     });
-
   }
 };
 
@@ -118,12 +103,12 @@ exports.getParty = async (req, res) => {
 // =========================
 exports.updateParty = async (req, res) => {
   try {
-
     const party = await Party.findByIdAndUpdate(
       req.params.id,
       req.body,
       {
         new: true,
+        runValidators: true,
       }
     );
 
@@ -139,23 +124,50 @@ exports.updateParty = async (req, res) => {
       message: "Updated Successfully",
       data: party,
     });
-
   } catch (err) {
-
     res.status(500).json({
       success: false,
       message: err.message,
     });
-
   }
 };
 
 // =========================
-// Delete Party
+// Toggle Status
+// =========================
+exports.togglePartyStatus = async (req, res) => {
+  try {
+    const party = await Party.findById(req.params.id);
+
+    if (!party) {
+      return res.status(404).json({
+        success: false,
+        message: "Party Not Found",
+      });
+    }
+
+    party.status = !party.status;
+
+    await party.save();
+
+    res.json({
+      success: true,
+      message: "Status Updated Successfully",
+      data: party,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+// =========================
+// Soft Delete
 // =========================
 exports.deleteParty = async (req, res) => {
   try {
-
     const party = await Party.findByIdAndUpdate(
       req.params.id,
       {
@@ -177,13 +189,10 @@ exports.deleteParty = async (req, res) => {
       success: true,
       message: "Deleted Successfully",
     });
-
   } catch (err) {
-
     res.status(500).json({
       success: false,
       message: err.message,
     });
-
   }
 };
